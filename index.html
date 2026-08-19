@@ -1419,6 +1419,7 @@ document.addEventListener("keydown",e=>{
   if(e.key==="/" && document.activeElement.tagName!=="INPUT"){e.preventDefault();document.getElementById("search").focus();}
 });
 render();renderReadiness();renderAchievements();countdown();setInterval(countdown,1000);
+initializeSB7Auth();
 </script>
 <div class="toast" id="toast"></div>
 </body>
