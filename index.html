@@ -393,6 +393,41 @@ body:before{
 }
 .sb7-footer b{color:#ddd}
 
+/* =========================================================
+   SB 7 — MOBILE SCROLL / WHITE GAP FIX
+   ========================================================= */
+
+   html,
+   body {
+     background-color: #07070a;
+       min-height: 100%;
+       }
+
+       html {
+         overscroll-behavior-y: none;
+         }
+
+         body {
+           min-height: 100vh;
+             overflow-x: hidden;
+               background:
+                   radial-gradient(
+                         circle at 50% -10%,
+                               #271015 0,
+                                     #0b0b10 30%,
+                                           #07070a 65%
+                                               );
+                                               }
+
+                                               /* Keep the fixed cinematic background behind the page */
+                                               body::before {
+                                                 pointer-events: none;
+                                                 }
+
+                                                 /* Prevent accidental horizontal/mobile viewport expansion */
+                                                 * {
+                                                   max-width: 100%;
+                                                   }
 </style>
 <!-- SB 7 — Supabase Client -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
