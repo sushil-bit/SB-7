@@ -51,7 +51,30 @@ a{color:inherit}
 .empty{text-align:center;padding:50px;color:var(--muted);border:1px dashed var(--line);border-radius:18px}
 .info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.info{background:var(--panel);border:1px solid var(--line);padding:20px;border-radius:18px}.info h3{margin-top:0}.info p,.info li{color:var(--muted);line-height:1.55;font-size:14px}
 footer{border-top:1px solid var(--line);margin-top:40px;padding:35px 0 55px;color:var(--muted);font-size:13px;text-align:center}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;z-index:100;padding:18px}.modal.show{display:flex}.modalbox{width:min(680px,100%);max-height:88vh;overflow:auto;background:#111118;border:1px solid var(--line);border-radius:22px;padding:22px;box-shadow:var(--shadow)}.close{float:right;background:#22222a;border:0;color:#fff;border-radius:10px;padding:8px 11px}.modalbox h2{margin-top:0}.warning{padding:12px 14px;border-radius:13px;background:#211c0e;color:#e7ce78;border:1px solid #4a4023;font-size:13px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;z-index:100;padding:18px}.modal.show{display:flex}
+/* SB7 GLOBAL SEARCH — Phase 7 */
+.sb7-global-search-btn{font-size:16px;min-width:38px}
+.sb7-global-search{z-index:160}
+.sb7-global-search .modalbox{width:min(760px,100%);max-height:min(82vh,760px);overflow:hidden;padding:0}
+.sb7-global-search-head{display:flex;gap:10px;align-items:center;padding:16px;border-bottom:1px solid var(--line)}
+.sb7-global-search-input{flex:1;min-width:0;background:#101016;border:1px solid var(--line);color:#fff;border-radius:12px;padding:13px 14px;outline:none;font-size:15px}
+.sb7-global-search-input:focus{border-color:#777}
+.sb7-global-search-results{padding:10px;max-height:calc(min(82vh,760px) - 82px);overflow:auto}
+.sb7-global-search-group{margin-bottom:14px}
+.sb7-global-search-group h4{margin:8px 8px;color:#aaa;font-size:11px;text-transform:uppercase;letter-spacing:1px}
+.sb7-global-search-result{width:100%;display:flex;align-items:center;gap:12px;text-align:left;background:#111118;border:1px solid #24242d;color:#fff;border-radius:12px;padding:12px;margin:6px 0;cursor:pointer}
+.sb7-global-search-result:hover{border-color:#666;background:#17171f}
+.sb7-global-search-icon{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:#1b1b24;flex:none}
+.sb7-global-search-result b{display:block;font-size:14px}
+.sb7-global-search-result span{display:block;color:#8e8e9b;font-size:11px;margin-top:3px}
+.sb7-global-search-empty{padding:28px 12px;text-align:center;color:#999}
+@media(max-width:760px){
+  .sb7-global-search{padding:10px}
+  .sb7-global-search .modalbox{max-height:88vh}
+  .sb7-global-search-results{max-height:calc(88vh - 82px)}
+  .sb7-global-search-head{padding:12px}
+}
+.modalbox{width:min(680px,100%);max-height:88vh;overflow:auto;background:#111118;border:1px solid var(--line);border-radius:22px;padding:22px;box-shadow:var(--shadow)}.close{float:right;background:#22222a;border:0;color:#fff;border-radius:10px;padding:8px 11px}.modalbox h2{margin-top:0}.warning{padding:12px 14px;border-radius:13px;background:#211c0e;color:#e7ce78;border:1px solid #4a4023;font-size:13px}
 @media(max-width:760px){.navlinks{display:none}.stats{grid-template-columns:repeat(2,1fr)}.info-grid{grid-template-columns:1fr}.countdown{grid-template-columns:repeat(2,1fr)}.hero h1{letter-spacing:-2px}.cardtop{display:block}.cardtop>.btn{margin-top:12px}}
 
 /* ===== Cinematic visual upgrade ===== */
@@ -483,16 +506,9 @@ body:before{
   flex-wrap:wrap;
   justify-content:flex-end;
 }
-  /* Keep CRUD editor modals above the Admin Control Center */
-#titleEditorModal,
-#characterEditorModal{
-  z-index:110;
-}
-  
 .sb7-character-modal .modalbox{
   width:min(600px,100%);
 }
-  
 .sb7-character-form{
   display:grid;
   gap:10px;
@@ -664,6 +680,7 @@ body:before{
       <button onclick="go('home')">Home</button><button onclick="go('guide')">Guide</button><button onclick="go('timeline')">Timeline</button><button onclick="go('about')">About</button>
     </div>
     <div style="display:flex;gap:7px;align-items:center;position:relative">
+      <button class="iconbtn sb7-global-search-btn" onclick="openGlobalSearch()" title="Search SB 7" aria-label="Search SB 7">🔍</button>
       <button class="iconbtn" onclick="resetProgress()" title="Reset progress">↻</button>
       <button
         class="iconbtn"
@@ -909,6 +926,20 @@ body:before{
 <footer>
   <div class="container">Made as a fan project • No affiliation with Marvel Studios, Disney or their trademarks.</div>
 <div class="sb7-footer">Built for the multiverse by <b>SB 7</b> • Road to Doomsday</div></footer>
+
+<!-- =========================================================
+      SB 7 GLOBAL SEARCH
+      ========================================================= -->
+<div class="modal sb7-global-search" id="globalSearchModal" onclick="if(event.target===this)closeGlobalSearch()">
+  <div class="modalbox">
+    <div class="sb7-global-search-head">
+      <input id="globalSearchInput" class="sb7-global-search-input" type="search" autocomplete="off"
+             placeholder="Search titles, characters, universes…" oninput="renderGlobalSearch()">
+      <button class="close" onclick="closeGlobalSearch()" aria-label="Close search">✕</button>
+    </div>
+    <div id="globalSearchResults" class="sb7-global-search-results"></div>
+  </div>
+</div>
 
 <div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modalbox"><button class="close" onclick="closeModal()">✕</button><div id="modalContent"></div></div>
@@ -2509,6 +2540,88 @@ function details(id){
  document.getElementById("modal").classList.add("show");
 }
 function closeModal(){document.getElementById("modal").classList.remove("show")}
+// =========================================================
+// SB7 GLOBAL SEARCH — searches the existing Phase 6 data without replacing it
+// =========================================================
+const SB7_GLOBAL_CHARACTERS = [
+  {name:"Loki", meta:"TVA • Multiverse", icon:"🦹"},
+  {name:"Doctor Strange", meta:"Magic • Multiverse", icon:"🪄"},
+  {name:"Spider-Man", meta:"Spider-Verse", icon:"🕷️"},
+  {name:"Wolverine", meta:"X-Men • Fox", icon:"🐺"},
+  {name:"Deadpool", meta:"Fox • TVA", icon:"🔴"},
+  {name:"Wanda", meta:"Magic • Multiverse", icon:"🔮"},
+  {name:"Captain America", meta:"Avengers • Legacy", icon:"🛡️"},
+  {name:"Fantastic Four", meta:"New universe", icon:"4️⃣"}
+];
+
+const SB7_GLOBAL_UNIVERSES = [
+  {name:"Main MCU", meta:"Earth-616 • Avengers", icon:"🛡️", mode:"mcu"},
+  {name:"Multiverse", meta:"TVA • Incursions • Variants", icon:"🌌", mode:"multiverse"},
+  {name:"X-Men", meta:"Fox Marvel timeline", icon:"🧬", mode:"xmen"},
+  {name:"Spider Worlds", meta:"Raimi • Webb • Sony", icon:"🕷️", mode:"spider"},
+  {name:"Fantastic Four", meta:"Separate universe • First Steps", icon:"4️⃣", mode:"complete"}
+];
+
+function openGlobalSearch(){
+  const modal=document.getElementById("globalSearchModal");
+  if(!modal)return;
+  modal.classList.add("show");
+  const input=document.getElementById("globalSearchInput");
+  if(input){input.value="";renderGlobalSearch();setTimeout(()=>input.focus(),40);}
+}
+function closeGlobalSearch(){document.getElementById("globalSearchModal")?.classList.remove("show");}
+function globalSearchEscape(text){
+  return String(text).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+}
+function renderGlobalSearch(){
+  const box=document.getElementById("globalSearchResults");
+  const input=document.getElementById("globalSearchInput");
+  if(!box||!input)return;
+  const q=input.value.trim().toLowerCase();
+  if(!q){
+    box.innerHTML='<div class="sb7-global-search-empty">🔎 Search across the SB 7 roadmap — titles, characters and universes.</div>';
+    return;
+  }
+  const titleResults=items.filter(x=>(x.title+" "+x.universe+" "+x.phase+" "+x.desc).toLowerCase().includes(q)).slice(0,8);
+  const characterResults=SB7_GLOBAL_CHARACTERS.filter(x=>(x.name+" "+x.meta).toLowerCase().includes(q)).slice(0,6);
+  const universeResults=SB7_GLOBAL_UNIVERSES.filter(x=>(x.name+" "+x.meta).toLowerCase().includes(q)).slice(0,6);
+  let html="";
+  if(titleResults.length){
+    html+='<div class="sb7-global-search-group"><h4>🎬 Titles</h4>';
+    titleResults.forEach(x=>{
+      html+=`<button class="sb7-global-search-result" onclick="globalSearchTitle(${x.id})"><span class="sb7-global-search-icon">${x.type==="Series"?"📺":"🎬"}</span><span><b>${globalSearchEscape(x.title)}</b><span>${x.year} • ${globalSearchEscape(x.type)} • ${globalSearchEscape(x.universe)}</span></span></button>`;
+    });
+    html+='</div>';
+  }
+  if(characterResults.length){
+    html+='<div class="sb7-global-search-group"><h4>👤 Characters</h4>';
+    characterResults.forEach(x=>{
+      html+=`<button class="sb7-global-search-result" onclick="globalSearchCharacter(${JSON.stringify(x.name)})"><span class="sb7-global-search-icon">${x.icon}</span><span><b>${globalSearchEscape(x.name)}</b><span>${globalSearchEscape(x.meta)}</span></span></button>`;
+    });
+    html+='</div>';
+  }
+  if(universeResults.length){
+    html+='<div class="sb7-global-search-group"><h4>🌌 Universes</h4>';
+    universeResults.forEach(x=>{
+      html+=`<button class="sb7-global-search-result" onclick="globalSearchUniverse(${JSON.stringify(x.mode)})"><span class="sb7-global-search-icon">${x.icon}</span><span><b>${globalSearchEscape(x.name)}</b><span>${globalSearchEscape(x.meta)}</span></span></button>`;
+    });
+    html+='</div>';
+  }
+  box.innerHTML=html||'<div class="sb7-global-search-empty">No results found. Try another title, character or universe. 🔎</div>';
+}
+function globalSearchTitle(id){
+  closeGlobalSearch();
+  const x=items.find(i=>i.id===id);
+  if(!x)return;
+  document.getElementById("search").value=x.title;
+  mode="complete";
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.mode==="complete"));
+  render();
+  appSection("timeline");
+}
+function globalSearchCharacter(name){closeGlobalSearch();characterSearch(name);}
+function globalSearchUniverse(m){closeGlobalSearch();universeMode(m);}
+
 function resetProgress(){
   if(confirm("Reset all watched progress and favorites on this device?")){
     watched={};favorites={};favoriteOnly=false;
@@ -2525,8 +2638,9 @@ function countdown(){
  document.getElementById("secs").textContent=Math.floor(d/1000)%60;
 }
 document.addEventListener("keydown",e=>{
-  if(e.key==="Escape"){closeModal();closeAdminLogin();closeAdminControlCenter();closeCharacterEditor();closeTitleEditor();document.getElementById("mobileMenu")?.classList.remove("show");}
-  if(e.key==="/" && document.activeElement.tagName!=="INPUT"){e.preventDefault();document.getElementById("search").focus();}
+  if(e.key==="Escape"){closeModal();closeGlobalSearch();closeAdminLogin();closeAdminControlCenter();closeCharacterEditor();closeTitleEditor();document.getElementById("mobileMenu")?.classList.remove("show");}
+  if(e.key==="/" && document.activeElement.tagName!=="INPUT"){e.preventDefault();openGlobalSearch();}
+  if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="k"){e.preventDefault();openGlobalSearch();}
 });
 render();renderReadiness();renderAchievements();countdown();setInterval(countdown,1000);
 
