@@ -483,14 +483,16 @@ body:before{
   flex-wrap:wrap;
   justify-content:flex-end;
 }
-.sb7-character-modal .modalbox{
-  width:min(600px,100%);
-}
-/* Keep CRUD editor modals above the Admin Control Center */
+  /* Keep CRUD editor modals above the Admin Control Center */
 #titleEditorModal,
 #characterEditorModal{
   z-index:110;
-  }
+}
+  
+.sb7-character-modal .modalbox{
+  width:min(600px,100%);
+}
+  
 .sb7-character-form{
   display:grid;
   gap:10px;
