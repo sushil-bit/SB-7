@@ -776,6 +776,38 @@ let sb7SupabaseReady = false;
 let sb7CurrentUser = null;
 let sb7IsAdmin = false;
 
+async function initializeSB7Auth() {
+  if (!sb7SupabaseReady || !sb7Supabase) {
+      return;
+        }
+
+          const {
+              data: { session }
+                } = await sb7Supabase.auth.getSession();
+
+                  if (!session?.user) {
+                      sb7CurrentUser = null;
+                          sb7IsAdmin = false;
+                              return;
+                                }
+
+                                  const { data: profile } =
+                                      await sb7Supabase
+                                            .from("profiles")
+                                                  .select("is_admin")
+                                                        .eq("id", session.user.id)
+                                                              .maybeSingle();
+
+                                                                if (profile?.is_admin === true) {
+                                                                    sb7CurrentUser = session.user;
+                                                                        sb7IsAdmin = true;
+
+                                                                            console.log(
+                                                                                  "SB7 admin session restored."
+                                                                                      );
+                                                                                        }
+                                                                                        }
+
 try {
   if (
     window.supabase &&
