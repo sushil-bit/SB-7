@@ -803,7 +803,177 @@ try {
         ready: sb7SupabaseReady,
           client: !!sb7Supabase
           });
+// ============================================================
+// SB 7 — ADMIN LOGIN
+// ============================================================
 
+function openAdminLogin() {
+  const modal = document.getElementById("adminLoginModal");
+
+    if (!modal) return;
+
+      modal.classList.add("show");
+
+        setTimeout(() => {
+            document.getElementById("adminEmail")?.focus();
+              }, 100);
+              }
+
+              function closeAdminLogin() {
+                document
+                    .getElementById("adminLoginModal")
+                        ?.classList.remove("show");
+                        }
+
+                        function setAdminLoginStatus(message, type = "") {
+                          const status =
+                              document.getElementById("adminLoginStatus");
+
+                                if (!status) return;
+
+                                  status.textContent = message;
+                                    status.className =
+                                        "admin-status" + (type ? " " + type : "");
+                                        }
+
+                                        function setAdminLoginLoading(loading) {
+                                          const button =
+                                              document.getElementById("adminLoginSubmit");
+
+                                                if (!button) return;
+
+                                                  button.disabled = loading;
+                                                    button.textContent =
+                                                        loading ? "⏳ Signing in..." : "🔐 Sign in";
+                                                        }
+
+                                                        async function handleAdminLogin(event) {
+                                                          event.preventDefault();
+
+                                                            if (!sb7SupabaseReady || !sb7Supabase) {
+                                                                setAdminLoginStatus(
+                                                                      "Supabase is not connected.",
+                                                                            "error"
+                                                                                );
+                                                                                    return;
+                                                                                      }
+
+                                                                                        const email =
+                                                                                            document.getElementById("adminEmail")
+                                                                                                  ?.value
+                                                                                                        .trim();
+
+                                                                                                          const password =
+                                                                                                              document.getElementById("adminPassword")
+                                                                                                                    ?.value;
+
+                                                                                                                      if (!email || !password) {
+                                                                                                                          setAdminLoginStatus(
+                                                                                                                                "Enter your email and password.",
+                                                                                                                                      "error"
+                                                                                                                                          );
+                                                                                                                                              return;
+                                                                                                                                                }
+
+                                                                                                                                                  setAdminLoginLoading(true);
+                                                                                                                                                    setAdminLoginStatus("Authenticating...");
+
+                                                                                                                                                      try {
+                                                                                                                                                          const { data, error } =
+                                                                                                                                                                await sb7Supabase.auth.signInWithPassword({
+                                                                                                                                                                        email,
+                                                                                                                                                                                password
+                                                                                                                                                                                      });
+
+                                                                                                                                                                                          if (error) {
+                                                                                                                                                                                                console.error("SB7 login error:", error);
+
+                                                                                                                                                                                                      setAdminLoginStatus(
+                                                                                                                                                                                                              "Sign in failed. Check your credentials.",
+                                                                                                                                                                                                                      "error"
+                                                                                                                                                                                                                            );
+
+                                                                                                                                                                                                                                  return;
+                                                                                                                                                                                                                                      }
+
+                                                                                                                                                                                                                                          if (!data?.user) {
+                                                                                                                                                                                                                                                setAdminLoginStatus(
+                                                                                                                                                                                                                                                        "No authenticated user returned.",
+                                                                                                                                                                                                                                                                "error"
+                                                                                                                                                                                                                                                                      );
+
+                                                                                                                                                                                                                                                                            return;
+                                                                                                                                                                                                                                                                                }
+
+                                                                                                                                                                                                                                                                                    // Verify admin through the database.
+                                                                                                                                                                                                                                                                                        const { data: profile, error: profileError } =
+                                                                                                                                                                                                                                                                                              await sb7Supabase
+                                                                                                                                                                                                                                                                                                      .from("profiles")
+                                                                                                                                                                                                                                                                                                              .select("is_admin")
+                                                                                                                                                                                                                                                                                                                      .eq("id", data.user.id)
+                                                                                                                                                                                                                                                                                                                              .maybeSingle();
+
+                                                                                                                                                                                                                                                                                                                                  if (profileError) {
+                                                                                                                                                                                                                                                                                                                                        console.error(
+                                                                                                                                                                                                                                                                                                                                                "SB7 profile verification error:",
+                                                                                                                                                                                                                                                                                                                                                        profileError
+                                                                                                                                                                                                                                                                                                                                                              );
+
+                                                                                                                                                                                                                                                                                                                                                                    await sb7Supabase.auth.signOut();
+
+                                                                                                                                                                                                                                                                                                                                                                          setAdminLoginStatus(
+                                                                                                                                                                                                                                                                                                                                                                                  "Could not verify administrator status.",
+                                                                                                                                                                                                                                                                                                                                                                                          "error"
+                                                                                                                                                                                                                                                                                                                                                                                                );
+
+                                                                                                                                                                                                                                                                                                                                                                                                      return;
+                                                                                                                                                                                                                                                                                                                                                                                                          }
+
+                                                                                                                                                                                                                                                                                                                                                                                                              if (profile?.is_admin !== true) {
+                                                                                                                                                                                                                                                                                                                                                                                                                    await sb7Supabase.auth.signOut();
+
+                                                                                                                                                                                                                                                                                                                                                                                                                          setAdminLoginStatus(
+                                                                                                                                                                                                                                                                                                                                                                                                                                  "Access denied. This account is not an SB 7 administrator.",
+                                                                                                                                                                                                                                                                                                                                                                                                                                          "error"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                );
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                      return;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                          }
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                              // Admin verified.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                  sb7CurrentUser = data.user;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                      sb7IsAdmin = true;
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                          setAdminLoginStatus(
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                "Admin authentication successful.",
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      "success"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          );
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              console.log(
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    "SB7 ADMIN VERIFIED:",
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          data.user.email
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              );
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  setTimeout(() => {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        closeAdminLogin();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              openAdminControlCenter();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  }, 500);
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    } catch (error) {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        console.error(
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              "SB7 admin login exception:",
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    error
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        );
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            setAdminLoginStatus(
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  "Unexpected error. Please try again.",
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        "error"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            );
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              } finally {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  setAdminLoginLoading(false);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    }
 const items = [
 /* Infinity Saga */
 {id:1,title:"Captain America: The First Avenger",year:2011,type:"Movie",phase:"Phase 1",universe:"Main MCU",importance:"Essential",mode:["mcu","complete","doomsday"],desc:"Steve Rogers, the Tesseract and the origins of a super-soldier legacy."},
