@@ -540,51 +540,6 @@ body:before{
 }
 
 /* =========================================================
-   SB 7 PHASE 7 PART 6 — UNIVERSE CRUD
-   ========================================================= */
-.sb7-universe-toolbar{
-  display:grid;
-  grid-template-columns:minmax(0,1fr) auto;
-  gap:8px;
-  margin-top:12px;
-}
-.sb7-universe-list{display:grid;gap:10px;margin-top:12px}
-.sb7-universe-card{
-  display:grid;
-  grid-template-columns:52px minmax(0,1fr) auto;
-  gap:12px;
-  align-items:center;
-  padding:12px;
-  border:1px solid var(--line);
-  border-radius:15px;
-  background:#101016;
-}
-.sb7-universe-icon{
-  width:52px;height:52px;border-radius:12px;display:grid;place-items:center;
-  background:#17171f;border:1px solid #2b2b35;font-size:24px;
-}
-.sb7-universe-card h4{margin:0 0 3px;font-size:14px}
-.sb7-universe-code{color:#888;font-size:10px;font-weight:800;letter-spacing:.5px}
-.sb7-universe-description{color:var(--muted);font-size:11px;line-height:1.45;margin-top:4px;
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.sb7-universe-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
-.sb7-universe-modal{z-index:110}
-.sb7-universe-modal .modalbox{width:min(600px,100%)}
-.sb7-universe-form{display:grid;gap:10px}
-.sb7-universe-form label{display:grid;gap:5px;color:#aaa;font-size:11px;font-weight:800}
-.sb7-universe-form input,.sb7-universe-form textarea{width:100%;box-sizing:border-box;background:#0d0d12;border:1px solid var(--line);color:#eee;border-radius:11px;padding:11px;outline:none}
-.sb7-universe-form textarea{min-height:120px;resize:vertical}
-.sb7-universe-form input:focus,.sb7-universe-form textarea:focus{border-color:#6a2529}
-.sb7-universe-form-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:3px}
-@media(max-width:600px){
- .sb7-universe-toolbar{grid-template-columns:1fr}
- .sb7-universe-card{grid-template-columns:46px minmax(0,1fr)}
- .sb7-universe-icon{width:46px;height:46px}
- .sb7-universe-actions{grid-column:1/-1;justify-content:stretch}
- .sb7-universe-actions .quick{flex:1;min-height:42px}
-}
-
-/* =========================================================
    SB 7 PHASE 7 PART 3 — ADMIN CONTROL CENTER
    ========================================================= */
 .sb7-admin-center{
@@ -687,6 +642,16 @@ body:before{
 .sb7-title-card{border:1px solid var(--line);border-radius:14px;background:#101016;padding:12px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
 .sb7-title-card h4{margin:0 0 4px;font-size:14px}.sb7-title-meta{font-size:11px;color:var(--muted);line-height:1.5}.sb7-title-hidden{opacity:.58}
 .sb7-title-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.sb7-title-actions button{min-height:38px}
+/* ===== SB 7 UNIVERSE CRUD ===== */
+.sb7-universe-toolbar{display:grid;grid-template-columns:1fr auto;gap:8px;margin:12px 0}
+.sb7-universe-list{display:grid;gap:8px;margin-top:10px}
+.sb7-universe-card{border:1px solid var(--line);border-radius:14px;background:#101016;padding:12px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
+.sb7-universe-card h4{margin:0 0 4px;font-size:14px}
+.sb7-universe-meta{font-size:11px;color:var(--muted);line-height:1.5}
+.sb7-universe-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.sb7-universe-editor{width:min(650px,100%);max-height:92vh;overflow:auto}
+#universeEditorModal{z-index:110}
+@media(max-width:600px){.sb7-universe-toolbar{grid-template-columns:1fr}.sb7-universe-card{grid-template-columns:1fr}.sb7-universe-actions{justify-content:flex-start}}
 .sb7-title-editor{width:min(760px,100%);max-height:92vh;overflow:auto}
 .sb7-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.sb7-form-grid label{display:block;color:#aaa;font-size:11px;font-weight:800}.sb7-form-grid label input,.sb7-form-grid label select,.sb7-form-grid label textarea{margin-top:5px}.sb7-form-wide{grid-column:1/-1}.sb7-check{display:flex!important;align-items:center;gap:7px}.sb7-check input{width:auto!important;margin:0!important}
 @media(max-width:600px){.sb7-title-toolbar{grid-template-columns:1fr}.sb7-title-card{grid-template-columns:1fr}.sb7-title-actions{justify-content:flex-start}.sb7-form-grid{grid-template-columns:1fr}.sb7-form-wide{grid-column:auto}}
@@ -1074,6 +1039,29 @@ body:before{
   </div>
 </div>
 
+<div class="modal" id="universeEditorModal" onclick="if(event.target===this)closeUniverseEditor()">
+  <div class="modalbox sb7-universe-editor">
+    <button class="close" onclick="closeUniverseEditor()" aria-label="Close">✕</button>
+    <div class="sb7-admin-section-title">
+      <div><h2 id="universeEditorHeading">Add Universe</h2><p>Changes are written to <code>public.universes</code>.</p></div>
+    </div>
+    <form id="universeEditorForm" onsubmit="saveAdminUniverse(event)">
+      <input type="hidden" id="universeEditId">
+      <div class="sb7-form-grid">
+        <label>Name *<input id="universeNameField" required maxlength="200"></label>
+        <label>Code<input id="universeCodeField" maxlength="100" placeholder="Earth-616"></label>
+        <label class="sb7-form-wide">Icon<input id="universeIconField" maxlength="100" placeholder="🌌"></label>
+        <label class="sb7-form-wide">Description<textarea id="universeDescriptionField" rows="4" maxlength="5000"></textarea></label>
+      </div>
+      <div id="universeEditorMessage" class="sb7-admin-message" aria-live="polite"></div>
+      <div class="sb7-admin-actions">
+        <button class="btn" type="submit" id="universeSaveButton">Save Universe</button>
+        <button class="quick" type="button" onclick="closeUniverseEditor()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <div class="modal" id="titleEditorModal" onclick="if(event.target===this)closeTitleEditor()">
   <div class="modalbox sb7-title-editor">
     <button class="close" onclick="closeTitleEditor()" aria-label="Close">✕</button>
@@ -1101,30 +1089,6 @@ body:before{
       <div class="sb7-admin-actions">
         <button class="btn" type="submit" id="titleSaveButton">Save Title</button>
         <button class="quick" type="button" onclick="closeTitleEditor()">Cancel</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- =========================================================
-     SB 7 — UNIVERSE EDITOR
-     ========================================================= -->
-<div class="modal sb7-universe-modal" id="universeEditorModal" onclick="if(event.target===this)closeUniverseEditor()">
-  <div class="modalbox">
-    <button class="close" onclick="closeUniverseEditor()" aria-label="Close">✕</button>
-    <div class="sb7-admin-section-title">
-      <div><h2 id="universeEditorHeading">Add Universe</h2><p>Changes are written to <code>public.universes</code>.</p></div>
-    </div>
-    <form id="universeEditorForm" class="sb7-universe-form" onsubmit="saveAdminUniverse(event)">
-      <input id="universeEditId" type="hidden">
-      <label>Name *<input id="universeNameField" type="text" maxlength="200" required placeholder="e.g. Earth-616"></label>
-      <label>Code<input id="universeCodeField" type="text" maxlength="100" placeholder="e.g. 616"></label>
-      <label>Description<textarea id="universeDescriptionField" maxlength="2000" placeholder="Universe description…"></textarea></label>
-      <label>Icon<input id="universeIconField" type="text" maxlength="20" placeholder="🌌"></label>
-      <div id="universeEditorMessage" class="sb7-admin-message" aria-live="polite"></div>
-      <div class="sb7-universe-form-actions">
-        <button type="button" class="quick" onclick="closeUniverseEditor()">Cancel</button>
-        <button type="submit" class="btn" id="universeSaveButton">Save Universe</button>
       </div>
     </form>
   </div>
@@ -1232,7 +1196,7 @@ body:before{
 
         <div id="adminPanelUniverses" hidden>
           <div class="sb7-admin-section-title">
-            <div><h3>🌌 Universes</h3><p>Manage the existing <code>public.universes</code> table.</p></div>
+            <div><h3>🌌 Universes</h3><p>Manage universes stored in <code>public.universes</code>.</p></div>
             <button class="quick" onclick="openUniverseEditor()">＋ Add Universe</button>
           </div>
           <div id="universeCrudMessage" class="sb7-admin-message" aria-live="polite"></div>
@@ -2020,7 +1984,7 @@ async function deleteAdminCharacter(id) {
 }
 
 // ============================================================
-// SB 7 — TITLE CRUD
+// SB 7 — UNIVERSE CRUD
 // ============================================================
 let sb7AdminUniverses = [];
 
@@ -2046,6 +2010,7 @@ async function loadAdminUniverses() {
   if (loading) { loading.hidden = false; loading.textContent = "Loading universes…"; }
   if (empty) empty.hidden = true;
   if (list) list.innerHTML = "";
+
   try {
     const { data, error } = await sb7Supabase
       .from("universes")
@@ -2070,19 +2035,13 @@ function renderAdminUniverses() {
   if (!list) return;
   const rows = sb7AdminUniverses.filter(row => {
     if (!query) return true;
-    return [row.name, row.code, row.description].filter(Boolean).join(" ").toLowerCase().includes(query);
+    return [row.name, row.code, row.description, row.icon].filter(Boolean).join(" ").toLowerCase().includes(query);
   });
-  if (!rows.length && sb7AdminUniverses.length) {
-    list.innerHTML = `<div class="sb7-admin-placeholder"><b>No matching universes.</b> Try another search.</div>`;
-    return;
-  }
   list.innerHTML = rows.map(row => `
     <article class="sb7-universe-card">
-      <div class="sb7-universe-icon">${escapeHtml(row.icon || "🌌")}</div>
       <div>
-        <h4>${escapeHtml(row.name)}</h4>
-        ${row.code ? `<div class="sb7-universe-code">${escapeHtml(row.code)}</div>` : ""}
-        ${row.description ? `<div class="sb7-universe-description">${escapeHtml(row.description)}</div>` : ""}
+        <h4>${escapeHtml(row.icon || "🌌")} ${escapeHtml(row.name || "Unnamed universe")}</h4>
+        <div class="sb7-universe-meta">${escapeHtml(row.code || "No code")} • ${escapeHtml(row.description || "No description")}</div>
       </div>
       <div class="sb7-universe-actions">
         <button class="quick" onclick="openUniverseEditor('${row.id}')">✏️ Edit</button>
@@ -2092,7 +2051,7 @@ function renderAdminUniverses() {
 }
 
 function openUniverseEditor(id = "") {
-  if (!sb7IsAdmin) return openAdminLogin();
+  if (!sb7IsAdmin) { openAdminLogin(); return; }
   const form = document.getElementById("universeEditorForm");
   if (!form) return;
   form.reset();
@@ -2101,35 +2060,42 @@ function openUniverseEditor(id = "") {
   setUniverseEditorMessage();
   if (id) {
     const row = sb7AdminUniverses.find(item => item.id === id);
-    if (!row) return;
+    if (!row) { setUniverseCrudMessage("Universe could not be found.", "error"); return; }
     document.getElementById("universeEditId").value = row.id;
     document.getElementById("universeNameField").value = row.name || "";
     document.getElementById("universeCodeField").value = row.code || "";
-    document.getElementById("universeDescriptionField").value = row.description || "";
     document.getElementById("universeIconField").value = row.icon || "";
+    document.getElementById("universeDescriptionField").value = row.description || "";
   }
   document.getElementById("universeEditorModal")?.classList.add("show");
-  setTimeout(() => document.getElementById("universeNameField")?.focus(), 100);
+  setTimeout(() => document.getElementById("universeNameField")?.focus(), 80);
 }
 
 function closeUniverseEditor() {
   document.getElementById("universeEditorModal")?.classList.remove("show");
 }
 
+function universeFormPayload() {
+  const name = document.getElementById("universeNameField").value.trim();
+  if (!name) throw new Error("Universe name is required.");
+  return {
+    name,
+    code: document.getElementById("universeCodeField").value.trim() || null,
+    description: document.getElementById("universeDescriptionField").value.trim() || null,
+    icon: document.getElementById("universeIconField").value.trim() || null
+  };
+}
+
 async function saveAdminUniverse(event) {
   event.preventDefault();
-  if (!sb7IsAdmin || !sb7SupabaseReady || !sb7Supabase) return;
-  const id = document.getElementById("universeEditId").value.trim();
-  const name = document.getElementById("universeNameField").value.trim();
-  const code = document.getElementById("universeCodeField").value.trim();
-  const description = document.getElementById("universeDescriptionField").value.trim();
-  const icon = document.getElementById("universeIconField").value.trim();
-  if (!name) { setUniverseEditorMessage("Universe name is required.", "error"); return; }
+  if (!sb7IsAdmin || !sb7Supabase) return;
   const button = document.getElementById("universeSaveButton");
-  if (button) { button.disabled = true; button.textContent = id ? "Saving…" : "Adding…"; }
-  setUniverseEditorMessage(id ? "Updating universe…" : "Adding universe…", "info");
   try {
-    const payload = { name, code: code || null, description: description || null, icon: icon || null };
+    const payload = universeFormPayload();
+    const id = document.getElementById("universeEditId").value;
+    button.disabled = true;
+    button.textContent = "Saving…";
+    setUniverseEditorMessage("Saving universe…", "info");
     let result;
     if (id) {
       result = await sb7Supabase.from("universes").update(payload).eq("id", id).select("id,name,code,description,icon,created_at").single();
@@ -2145,15 +2111,16 @@ async function saveAdminUniverse(event) {
     console.error("SB7 universe save error:", error);
     setUniverseEditorMessage("Could not save universe: " + error.message, "error");
   } finally {
-    if (button) { button.disabled = false; button.textContent = "Save Universe"; }
+    button.disabled = false;
+    button.textContent = "Save Universe";
   }
 }
 
 async function deleteAdminUniverse(id) {
-  if (!sb7IsAdmin || !sb7SupabaseReady || !sb7Supabase) return;
+  if (!sb7IsAdmin || !sb7Supabase) return;
   const row = sb7AdminUniverses.find(item => item.id === id);
   if (!row) return;
-  if (!confirm(`Delete universe "${row.name}"? This cannot be undone.`)) return;
+  if (!confirm(`Delete “${row.name || "this universe"}”? This cannot be undone.`)) return;
   try {
     const { error } = await sb7Supabase.from("universes").delete().eq("id", id);
     if (error) throw error;
@@ -2166,6 +2133,9 @@ async function deleteAdminUniverse(id) {
   }
 }
 
+// ============================================================
+// SB 7 — TITLE CRUD
+// ============================================================
 let sb7AdminTitles = [];
 
 function setTitleCrudMessage(message = "", type = "") {
