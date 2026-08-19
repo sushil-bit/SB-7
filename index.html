@@ -428,6 +428,117 @@ body:before{
                                                  * {
                                                    max-width: 100%;
                                                    }
+
+/* =========================================================
+   SB 7 PHASE 7 PART 5 — CHARACTER CRUD
+   ========================================================= */
+.sb7-character-toolbar{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:8px;
+  margin-top:12px;
+}
+.sb7-character-list{
+  display:grid;
+  gap:10px;
+  margin-top:12px;
+}
+.sb7-character-card{
+  display:grid;
+  grid-template-columns:64px minmax(0,1fr) auto;
+  gap:12px;
+  align-items:center;
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:15px;
+  background:#101016;
+}
+.sb7-character-avatar{
+  width:64px;
+  height:64px;
+  border-radius:12px;
+  object-fit:cover;
+  background:#17171f;
+  border:1px solid #2b2b35;
+}
+.sb7-character-avatar-empty{
+  display:grid;
+  place-items:center;
+  color:#777;
+  font-size:24px;
+}
+.sb7-character-card h4{margin:0 0 4px;font-size:14px}
+.sb7-character-description{
+  color:var(--muted);
+  font-size:11px;
+  line-height:1.45;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+.sb7-character-actions{
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+.sb7-character-modal .modalbox{
+  width:min(600px,100%);
+}
+.sb7-character-form{
+  display:grid;
+  gap:10px;
+}
+.sb7-character-form label{
+  display:grid;
+  gap:5px;
+  color:#aaa;
+  font-size:11px;
+  font-weight:800;
+}
+.sb7-character-form input,
+.sb7-character-form textarea{
+  width:100%;
+  box-sizing:border-box;
+  background:#0d0d12;
+  border:1px solid var(--line);
+  color:#eee;
+  border-radius:11px;
+  padding:11px;
+  outline:none;
+}
+.sb7-character-form textarea{
+  min-height:120px;
+  resize:vertical;
+}
+.sb7-character-form input:focus,
+.sb7-character-form textarea:focus{
+  border-color:#6a2529;
+}
+.sb7-character-form-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:3px;
+}
+@media(max-width:600px){
+  .sb7-character-toolbar{grid-template-columns:1fr}
+  .sb7-character-card{
+    grid-template-columns:52px minmax(0,1fr);
+  }
+  .sb7-character-avatar{width:52px;height:52px}
+  .sb7-character-actions{
+    grid-column:1/-1;
+    justify-content:stretch;
+  }
+  .sb7-character-actions .quick{
+    flex:1;
+    min-height:42px;
+  }
+}
+
 /* =========================================================
    SB 7 PHASE 7 PART 3 — ADMIN CONTROL CENTER
    ========================================================= */
@@ -871,6 +982,53 @@ body:before{
 <!-- =========================================================
      SB 7 — TITLE EDITOR
      ========================================================= -->
+
+<!-- =========================================================
+     SB 7 — CHARACTER EDITOR
+     ========================================================= -->
+<div class="modal sb7-character-modal" id="characterEditorModal"
+     onclick="if(event.target===this)closeCharacterEditor()">
+  <div class="modalbox">
+    <button class="close" onclick="closeCharacterEditor()" aria-label="Close">✕</button>
+
+    <div class="sb7-admin-section-title">
+      <div>
+        <h3 id="characterEditorHeading">Add Character</h3>
+        <p>Existing columns: name, description, image_url.</p>
+      </div>
+    </div>
+
+    <div id="characterEditorMessage" class="sb7-admin-message" aria-live="polite"></div>
+
+    <form id="characterEditorForm" class="sb7-character-form" onsubmit="saveAdminCharacter(event)">
+      <input id="characterEditId" type="hidden">
+
+      <label>
+        Character name *
+        <input id="characterNameField" type="text" maxlength="200" required
+               placeholder="e.g. Doctor Strange">
+      </label>
+
+      <label>
+        Description
+        <textarea id="characterDescriptionField" maxlength="2000"
+                  placeholder="Character description…"></textarea>
+      </label>
+
+      <label>
+        Image URL
+        <input id="characterImageUrlField" type="url" maxlength="1000"
+               placeholder="https://…">
+      </label>
+
+      <div class="sb7-character-form-actions">
+        <button type="button" class="quick" onclick="closeCharacterEditor()">Cancel</button>
+        <button type="submit" class="btn" id="characterSaveButton">Save Character</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <div class="modal" id="titleEditorModal" onclick="if(event.target===this)closeTitleEditor()">
   <div class="modalbox sb7-title-editor">
     <button class="close" onclick="closeTitleEditor()" aria-label="Close">✕</button>
@@ -981,9 +1139,26 @@ body:before{
 
         <div id="adminPanelCharacters" hidden>
           <div class="sb7-admin-section-title">
-            <div><h3>👤 Characters</h3><p>Database schema will be verified before CRUD.</p></div>
+            <div>
+              <h3>👤 Characters</h3>
+              <p>Manage the existing <code>characters</code> table.</p>
+            </div>
+            <button class="quick" onclick="openCharacterEditor()">＋ Add Character</button>
           </div>
-          <div class="sb7-admin-placeholder"><b>Coming next:</b> Character CRUD using the existing <code>characters</code> table.</div>
+
+          <div id="characterCrudMessage" class="sb7-admin-message" aria-live="polite"></div>
+
+          <div class="sb7-character-toolbar">
+            <input id="characterAdminSearch" class="sb7-admin-input" type="search"
+                   placeholder="Search characters…" oninput="renderAdminCharacters()">
+            <button class="quick" onclick="loadAdminCharacters()">↻ Refresh</button>
+          </div>
+
+          <div id="adminCharactersLoading" class="sb7-admin-placeholder">Loading characters…</div>
+          <div id="adminCharactersEmpty" class="sb7-admin-placeholder" hidden>
+            <b>No characters yet.</b> Add the first character using the button above.
+          </div>
+          <div id="adminCharactersList" class="sb7-character-list"></div>
         </div>
 
         <div id="adminPanelUniverses" hidden>
@@ -1372,6 +1547,7 @@ function showAdminPanel(panel) {
   });
 
   if (panel === "titles") loadAdminTitles();
+  if (panel === "characters") loadAdminCharacters();
 
   document.querySelectorAll(".sb7-admin-nav button").forEach(button => {
     const active =
@@ -1472,6 +1648,298 @@ async function handleAdminLogout() {
   }
 }
 
+
+
+// ============================================================
+// SB 7 — PHASE 7 PART 5 CHARACTER CRUD
+// ============================================================
+
+let sb7AdminCharacters = [];
+
+function setCharacterCrudMessage(message = "", type = "") {
+  const node = document.getElementById("characterCrudMessage");
+  if (!node) return;
+  node.textContent = message;
+  node.className = "sb7-admin-message" + (message ? " show " + type : "");
+}
+
+function setCharacterEditorMessage(message = "", type = "") {
+  const node = document.getElementById("characterEditorMessage");
+  if (!node) return;
+  node.textContent = message;
+  node.className = "sb7-admin-message" + (message ? " show " + type : "");
+}
+
+async function loadAdminCharacters() {
+  if (!sb7IsAdmin || !sb7SupabaseReady || !sb7Supabase) return;
+
+  const loading = document.getElementById("adminCharactersLoading");
+  const empty = document.getElementById("adminCharactersEmpty");
+
+  if (loading) {
+    loading.hidden = false;
+    loading.textContent = "Loading characters…";
+  }
+  if (empty) empty.hidden = true;
+
+  try {
+    const { data, error } = await sb7Supabase
+      .from("characters")
+      .select("id,name,description,image_url,created_at")
+      .order("name", { ascending: true });
+
+    if (error) throw error;
+
+    sb7AdminCharacters = data || [];
+    renderAdminCharacters();
+
+    if (loading) loading.hidden = true;
+    if (empty) empty.hidden = sb7AdminCharacters.length !== 0;
+
+    setCharacterCrudMessage(
+      `${sb7AdminCharacters.length} character${sb7AdminCharacters.length === 1 ? "" : "s"} loaded.`,
+      "success"
+    );
+  } catch (error) {
+    console.error("SB7 character load error:", error);
+
+    if (loading) {
+      loading.hidden = false;
+      loading.textContent = "Could not load characters: " + error.message;
+    }
+
+    setCharacterCrudMessage(
+      "Could not load characters: " + error.message,
+      "error"
+    );
+  }
+}
+
+function renderAdminCharacters() {
+  const list = document.getElementById("adminCharactersList");
+  const query = (document.getElementById("characterAdminSearch")?.value || "")
+    .trim()
+    .toLowerCase();
+
+  if (!list) return;
+
+  const rows = sb7AdminCharacters.filter(row => {
+    if (!query) return true;
+    return [row.name, row.description]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase()
+      .includes(query);
+  });
+
+  if (!rows.length && sb7AdminCharacters.length) {
+    list.innerHTML = `
+      <div class="sb7-admin-placeholder">
+        <b>No matching characters.</b> Try another search.
+      </div>`;
+    return;
+  }
+
+  list.innerHTML = rows.map(row => {
+    const image = row.image_url
+      ? `<img class="sb7-character-avatar"
+              src="${escapeHtml(row.image_url)}"
+              alt=""
+              loading="lazy"
+              onerror="this.style.display='none';this.nextElementSibling.style.display='grid';">
+         <div class="sb7-character-avatar sb7-character-avatar-empty" style="display:none">👤</div>`
+      : `<div class="sb7-character-avatar sb7-character-avatar-empty">👤</div>`;
+
+    return `
+      <article class="sb7-character-card">
+        <div>${image}</div>
+
+        <div>
+          <h4>${escapeHtml(row.name || "Unnamed character")}</h4>
+          <div class="sb7-character-description">
+            ${escapeHtml(row.description || "No description")}
+          </div>
+        </div>
+
+        <div class="sb7-character-actions">
+          <button class="quick" onclick="openCharacterEditor('${row.id}')">✏️ Edit</button>
+          <button class="quick sb7-admin-logout"
+                  onclick="deleteAdminCharacter('${row.id}')">🗑️ Delete</button>
+        </div>
+      </article>`;
+  }).join("");
+}
+
+function openCharacterEditor(id = "") {
+  if (!sb7IsAdmin) {
+    openAdminLogin();
+    return;
+  }
+
+  const form = document.getElementById("characterEditorForm");
+  if (!form) return;
+
+  form.reset();
+
+  document.getElementById("characterEditId").value = "";
+  document.getElementById("characterEditorHeading").textContent =
+    id ? "Edit Character" : "Add Character";
+
+  setCharacterEditorMessage();
+
+  if (id) {
+    const row = sb7AdminCharacters.find(item => item.id === id);
+
+    if (!row) {
+      setCharacterCrudMessage("Character could not be found.", "error");
+      return;
+    }
+
+    document.getElementById("characterEditId").value = row.id;
+    document.getElementById("characterNameField").value = row.name || "";
+    document.getElementById("characterDescriptionField").value =
+      row.description || "";
+    document.getElementById("characterImageUrlField").value =
+      row.image_url || "";
+  }
+
+  document.getElementById("characterEditorModal")?.classList.add("show");
+
+  setTimeout(
+    () => document.getElementById("characterNameField")?.focus(),
+    80
+  );
+}
+
+function closeCharacterEditor() {
+  document.getElementById("characterEditorModal")?.classList.remove("show");
+}
+
+function characterFormPayload() {
+  const name = document.getElementById("characterNameField").value.trim();
+
+  if (!name) {
+    throw new Error("Character name is required.");
+  }
+
+  const imageUrl =
+    document.getElementById("characterImageUrlField").value.trim();
+
+  if (imageUrl) {
+    try {
+      const parsed = new URL(imageUrl);
+      if (!["http:", "https:"].includes(parsed.protocol)) {
+        throw new Error();
+      }
+    } catch {
+      throw new Error("Image URL must be a valid http or https URL.");
+    }
+  }
+
+  return {
+    name,
+    description:
+      document.getElementById("characterDescriptionField").value.trim() || null,
+    image_url: imageUrl || null
+  };
+}
+
+async function saveAdminCharacter(event) {
+  event.preventDefault();
+
+  if (!sb7IsAdmin || !sb7Supabase) return;
+
+  const button = document.getElementById("characterSaveButton");
+
+  try {
+    const payload = characterFormPayload();
+    const id = document.getElementById("characterEditId").value;
+
+    button.disabled = true;
+    button.textContent = "Saving…";
+    setCharacterEditorMessage("Saving character…", "info");
+
+    let result;
+
+    if (id) {
+      result = await sb7Supabase
+        .from("characters")
+        .update(payload)
+        .eq("id", id)
+        .select("id,name,description,image_url,created_at")
+        .single();
+    } else {
+      result = await sb7Supabase
+        .from("characters")
+        .insert(payload)
+        .select("id,name,description,image_url,created_at")
+        .single();
+    }
+
+    if (result.error) throw result.error;
+
+    closeCharacterEditor();
+
+    setCharacterCrudMessage(
+      id
+        ? "Character updated successfully."
+        : "Character added successfully.",
+      "success"
+    );
+
+    await loadAdminCharacters();
+    await loadAdminDashboardStats();
+  } catch (error) {
+    console.error("SB7 character save error:", error);
+
+    setCharacterEditorMessage(
+      "Could not save character: " + error.message,
+      "error"
+    );
+  } finally {
+    button.disabled = false;
+    button.textContent = "Save Character";
+  }
+}
+
+async function deleteAdminCharacter(id) {
+  if (!sb7IsAdmin || !sb7Supabase) return;
+
+  const row = sb7AdminCharacters.find(item => item.id === id);
+  if (!row) return;
+
+  if (
+    !confirm(
+      `Delete “${row.name || "this character"}”? This cannot be undone.`
+    )
+  ) {
+    return;
+  }
+
+  try {
+    const { error } = await sb7Supabase
+      .from("characters")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
+
+    setCharacterCrudMessage(
+      "Character deleted successfully.",
+      "success"
+    );
+
+    await loadAdminCharacters();
+    await loadAdminDashboardStats();
+  } catch (error) {
+    console.error("SB7 character delete error:", error);
+
+    setCharacterCrudMessage(
+      "Could not delete character: " + error.message,
+      "error"
+    );
+  }
+}
 
 // ============================================================
 // SB 7 — TITLE CRUD
@@ -2050,7 +2518,7 @@ function countdown(){
  document.getElementById("secs").textContent=Math.floor(d/1000)%60;
 }
 document.addEventListener("keydown",e=>{
-  if(e.key==="Escape"){closeModal();closeAdminLogin();closeAdminControlCenter();closeTitleEditor();document.getElementById("mobileMenu")?.classList.remove("show");}
+  if(e.key==="Escape"){closeModal();closeAdminLogin();closeAdminControlCenter();closeCharacterEditor();closeTitleEditor();document.getElementById("mobileMenu")?.classList.remove("show");}
   if(e.key==="/" && document.activeElement.tagName!=="INPUT"){e.preventDefault();document.getElementById("search").focus();}
 });
 render();renderReadiness();renderAchievements();countdown();setInterval(countdown,1000);
