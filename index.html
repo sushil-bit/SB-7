@@ -689,7 +689,79 @@ body:before{
 <div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modalbox"><button class="close" onclick="closeModal()">✕</button><div id="modalContent"></div></div>
 </div>
-
+<!-- =========================================================
+      SB 7 ADMIN LOGIN
+      ========================================================= -->
+      
+      <div
+        class="modal"
+          id="adminLoginModal"
+            onclick="if(event.target === this) closeAdminLogin()"
+            >
+              <div class="modalbox sb7-admin-login">
+              
+                  <button
+                        class="close"
+                              onclick="closeAdminLogin()"
+                                    aria-label="Close"
+                                        >
+                                              ✕
+                                                  </button>
+                                                  
+                                                      <div class="admin-login-header">
+                                                            <div class="admin-lock">🔐</div>
+                                                            
+                                                                  <div>
+                                                                          <div class="admin-kicker">SB 7</div>
+                                                                                  <h2>Admin Access</h2>
+                                                                                          <p class="meta">
+                                                                                                    Road to Doomsday Control Center
+                                                                                                            </p>
+                                                                                                                  </div>
+                                                                                                                      </div>
+                                                                                                                      
+                                                                                                                          <form id="adminLoginForm" onsubmit="handleAdminLogin(event)">
+                                                                                                                          
+                                                                                                                                <label class="admin-field">
+                                                                                                                                        <span>Email</span>
+                                                                                                                                                <input
+                                                                                                                                                          id="adminEmail"
+                                                                                                                                                                    type="email"
+                                                                                                                                                                              autocomplete="username"
+                                                                                                                                                                                        placeholder="Admin email"
+                                                                                                                                                                                                  required
+                                                                                                                                                                                                          >
+                                                                                                                                                                                                                </label>
+                                                                                                                                                                                                                
+                                                                                                                                                                                                                      <label class="admin-field">
+                                                                                                                                                                                                                              <span>Password</span>
+                                                                                                                                                                                                                                      <input
+                                                                                                                                                                                                                                                id="adminPassword"
+                                                                                                                                                                                                                                                          type="password"
+                                                                                                                                                                                                                                                                    autocomplete="current-password"
+                                                                                                                                                                                                                                                                              placeholder="Password"
+                                                                                                                                                                                                                                                                                        required
+                                                                                                                                                                                                                                                                                                >
+                                                                                                                                                                                                                                                                                                      </label>
+                                                                                                                                                                                                                                                                                                      
+                                                                                                                                                                                                                                                                                                            <div
+                                                                                                                                                                                                                                                                                                                    id="adminLoginStatus"
+                                                                                                                                                                                                                                                                                                                            class="admin-status"
+                                                                                                                                                                                                                                                                                                                                    aria-live="polite"
+                                                                                                                                                                                                                                                                                                                                          ></div>
+                                                                                                                                                                                                                                                                                                                                          
+                                                                                                                                                                                                                                                                                                                                                <button
+                                                                                                                                                                                                                                                                                                                                                        id="adminLoginSubmit"
+                                                                                                                                                                                                                                                                                                                                                                class="btn primary admin-submit"
+                                                                                                                                                                                                                                                                                                                                                                        type="submit"
+                                                                                                                                                                                                                                                                                                                                                                              >
+                                                                                                                                                                                                                                                                                                                                                                                      🔐 Sign in
+                                                                                                                                                                                                                                                                                                                                                                                            </button>
+                                                                                                                                                                                                                                                                                                                                                                                            
+                                                                                                                                                                                                                                                                                                                                                                                                </form>
+                                                                                                                                                                                                                                                                                                                                                                                                
+                                                                                                                                                                                                                                                                                                                                                                                                  </div>
+                                                                                                                                                                                                                                                                                                                                                                                                  </div>
 <script>
   // ============================================================
 // SB 7 — PHASE 7 SUPABASE FOUNDATION
