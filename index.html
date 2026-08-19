@@ -441,6 +441,14 @@ body:before{
     </div>
     <div style="display:flex;gap:7px;align-items:center;position:relative">
       <button class="iconbtn" onclick="resetProgress()" title="Reset progress">↻</button>
+      <button
+        class="iconbtn"
+          id="adminAccessBtn"
+            onclick="openAdminLogin()"
+              title="SB 7 Admin"
+              >
+                🔐
+                </button>
       <button class="iconbtn" id="menuBtn" onclick="toggleMobileMenu()" aria-label="Open menu">☰</button>
       <div class="mobile-menu" id="mobileMenu">
         <button onclick="go('home');toggleMobileMenu()">🏠 Home</button>
