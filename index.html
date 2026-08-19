@@ -522,6 +522,18 @@ body:before{
   .sb7-admin-stats{grid-template-columns:1fr}
 }
 
+
+/* ===== SB 7 TITLE CRUD ===== */
+.sb7-title-toolbar{display:grid;grid-template-columns:1fr auto;gap:8px;margin:12px 0}
+.sb7-admin-input,.sb7-form-grid input,.sb7-form-grid select,.sb7-form-grid textarea{width:100%;box-sizing:border-box;background:#0d0d12;border:1px solid var(--line);color:#eee;border-radius:11px;padding:10px;font:inherit}
+.sb7-admin-input:focus,.sb7-form-grid input:focus,.sb7-form-grid select:focus,.sb7-form-grid textarea:focus{outline:2px solid rgba(230,36,41,.35);border-color:#6a2529}
+.sb7-title-list{display:grid;gap:8px;margin-top:10px}
+.sb7-title-card{border:1px solid var(--line);border-radius:14px;background:#101016;padding:12px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
+.sb7-title-card h4{margin:0 0 4px;font-size:14px}.sb7-title-meta{font-size:11px;color:var(--muted);line-height:1.5}.sb7-title-hidden{opacity:.58}
+.sb7-title-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.sb7-title-actions button{min-height:38px}
+.sb7-title-editor{width:min(760px,100%);max-height:92vh;overflow:auto}
+.sb7-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.sb7-form-grid label{display:block;color:#aaa;font-size:11px;font-weight:800}.sb7-form-grid label input,.sb7-form-grid label select,.sb7-form-grid label textarea{margin-top:5px}.sb7-form-wide{grid-column:1/-1}.sb7-check{display:flex!important;align-items:center;gap:7px}.sb7-check input{width:auto!important;margin:0!important}
+@media(max-width:600px){.sb7-title-toolbar{grid-template-columns:1fr}.sb7-title-card{grid-template-columns:1fr}.sb7-title-actions{justify-content:flex-start}.sb7-form-grid{grid-template-columns:1fr}.sb7-form-wide{grid-column:auto}}
 </style>
 <!-- SB 7 — Supabase Client -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -857,6 +869,41 @@ body:before{
                                                                                                                                                                                                                                                                                                                                                                                                   </div>
                                                                                                                                                                                                                                                                                                                                                                                                   </div>
 <!-- =========================================================
+     SB 7 — TITLE EDITOR
+     ========================================================= -->
+<div class="modal" id="titleEditorModal" onclick="if(event.target===this)closeTitleEditor()">
+  <div class="modalbox sb7-title-editor">
+    <button class="close" onclick="closeTitleEditor()" aria-label="Close">✕</button>
+    <div class="sb7-admin-section-title">
+      <div><h2 id="titleEditorHeading">Add Title</h2><p>Changes are written to <code>public.titles</code>.</p></div>
+    </div>
+    <form id="titleEditorForm" onsubmit="saveAdminTitle(event)">
+      <input type="hidden" id="titleEditId">
+      <div class="sb7-form-grid">
+        <label>Title *<input id="titleField" required maxlength="200"></label>
+        <label>Type<input id="typeField" maxlength="50" placeholder="Movie / Series"></label>
+        <label>Release date<input id="releaseDateField" type="date"></label>
+        <label>Year<input id="yearField" type="number" min="1900" max="2100"></label>
+        <label>Phase<input id="phaseField" maxlength="100" placeholder="Phase 6"></label>
+        <label>Importance<input id="importanceField" maxlength="50" placeholder="Essential"></label>
+        <label>Status<select id="statusField"><option value="upcoming">Upcoming</option><option value="released">Released</option><option value="announced">Announced</option><option value="delayed">Delayed</option></select></label>
+        <label>Runtime (minutes)<input id="runtimeField" type="number" min="0" max="1000"></label>
+        <label class="sb7-form-wide">Poster URL<input id="posterUrlField" type="url" maxlength="1000" placeholder="https://…"></label>
+        <label class="sb7-form-wide">Trailer URL<input id="trailerUrlField" type="url" maxlength="1000" placeholder="https://…"></label>
+        <label class="sb7-form-wide">Description<textarea id="descriptionField" rows="4" maxlength="5000"></textarea></label>
+        <label class="sb7-check"><input id="doomsdayField" type="checkbox"> Doomsday relevance</label>
+        <label class="sb7-check"><input id="activeField" type="checkbox" checked> Active / visible</label>
+      </div>
+      <div id="titleEditorMessage" class="sb7-admin-message" aria-live="polite"></div>
+      <div class="sb7-admin-actions">
+        <button class="btn" type="submit" id="titleSaveButton">Save Title</button>
+        <button class="quick" type="button" onclick="closeTitleEditor()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- =========================================================
      SB 7 — ADMIN CONTROL CENTER
      ========================================================= -->
 <div class="modal" id="adminControlCenterModal"
@@ -919,9 +966,17 @@ body:before{
 
         <div id="adminPanelTitles" hidden>
           <div class="sb7-admin-section-title">
-            <div><h3>🎬 Titles</h3><p>CRUD is the next major step.</p></div>
+            <div><h3>🎬 Titles</h3><p>Manage the existing <code>public.titles</code> table.</p></div>
+            <button class="quick" onclick="openTitleEditor()">＋ Add Title</button>
           </div>
-          <div class="sb7-admin-placeholder"><b>Coming next:</b> Title CRUD using the existing <code>titles</code> table. No duplicate table will be created.</div>
+          <div id="titleCrudMessage" class="sb7-admin-message" aria-live="polite"></div>
+          <div class="sb7-title-toolbar">
+            <input id="titleAdminSearch" class="sb7-admin-input" type="search" placeholder="Search titles…" oninput="renderAdminTitles()">
+            <button class="quick" onclick="loadAdminTitles()">↻ Refresh</button>
+          </div>
+          <div id="adminTitlesLoading" class="sb7-admin-placeholder">Loading titles…</div>
+          <div id="adminTitlesEmpty" class="sb7-admin-placeholder" hidden><b>No titles yet.</b> Add the first title using the button above.</div>
+          <div class="sb7-title-list" id="adminTitlesList"></div>
         </div>
 
         <div id="adminPanelCharacters" hidden>
@@ -1316,6 +1371,8 @@ function showAdminPanel(panel) {
     if (node) node.hidden = key !== panel;
   });
 
+  if (panel === "titles") loadAdminTitles();
+
   document.querySelectorAll(".sb7-admin-nav button").forEach(button => {
     const active =
       (panel === "dashboard" && button.id === "adminNavDashboard") ||
@@ -1370,21 +1427,19 @@ async function loadAdminDashboardStats() {
     setAdminStat("adminStatCharacters", characters);
     setAdminStat("adminStatUniverses", universes);
 
-    /*
-      The three category counts below are deliberately not guessed from
-      column names. The current index.html does not contain the Supabase
-      titles schema, so Phase 7 Part 3 only reads schema-independent totals.
-      They will be populated when the actual titles schema is verified before
-      Title CRUD is implemented.
-    */
-    setAdminStat("adminStatUpcoming", "—");
-    setAdminStat("adminStatReleased", "—");
-    setAdminStat("adminStatDoomsday", "—");
+    const today = new Date().toISOString().slice(0, 10);
+    const [upcomingRes, releasedRes, doomsdayRes] = await Promise.all([
+      sb7Supabase.from("titles").select("id", { count: "exact", head: true }).eq("active", true).or(`status.eq.upcoming,release_date.gt.${today}`),
+      sb7Supabase.from("titles").select("id", { count: "exact", head: true }).or(`status.eq.released,release_date.lte.${today}`),
+      sb7Supabase.from("titles").select("id", { count: "exact", head: true }).eq("doomsday_relevance", true).eq("active", true)
+    ]);
+    for (const result of [upcomingRes, releasedRes, doomsdayRes]) { if (result.error) throw new Error(`titles: ${result.error.message}`); }
+    setAdminStat("adminStatUpcoming", upcomingRes.count ?? 0);
+    setAdminStat("adminStatReleased", releasedRes.count ?? 0);
+    setAdminStat("adminStatDoomsday", doomsdayRes.count ?? 0);
 
-    setAdminDashboardMessage(
-      "Live totals loaded. Upcoming, released and Doomsday category counts are waiting for verified titles-schema mapping.",
-      "success"
-    );
+    setAdminDashboardMessage("Live statistics loaded from Supabase.", "success");
+    if (document.getElementById("adminPanelTitles") && !document.getElementById("adminPanelTitles").hidden) loadAdminTitles();
   } catch (error) {
     console.error("SB7 admin dashboard statistics error:", error);
 
@@ -1415,6 +1470,178 @@ async function handleAdminLogout() {
     console.error("SB7 admin logout error:", error);
     toast("Logout failed. Please try again.");
   }
+}
+
+
+// ============================================================
+// SB 7 — TITLE CRUD
+// ============================================================
+let sb7AdminTitles = [];
+
+function setTitleCrudMessage(message = "", type = "") {
+  const node = document.getElementById("titleCrudMessage");
+  if (!node) return;
+  node.textContent = message;
+  node.className = "sb7-admin-message" + (message ? " show " + type : "");
+}
+function setTitleEditorMessage(message = "", type = "") {
+  const node = document.getElementById("titleEditorMessage");
+  if (!node) return;
+  node.textContent = message;
+  node.className = "sb7-admin-message" + (message ? " show " + type : "");
+}
+
+async function loadAdminTitles() {
+  if (!sb7IsAdmin || !sb7SupabaseReady || !sb7Supabase) return;
+  const loading = document.getElementById("adminTitlesLoading");
+  const empty = document.getElementById("adminTitlesEmpty");
+  const list = document.getElementById("adminTitlesList");
+  if (loading) { loading.hidden = false; loading.textContent = "Loading titles…"; }
+  if (empty) empty.hidden = true;
+  if (list) list.innerHTML = "";
+  try {
+    const { data, error } = await sb7Supabase.from("titles")
+      .select("id,title,type,release_date,year,phase,importance,status,runtime,poster_url,trailer_url,description,doomsday_relevance,active,created_at,updated_at")
+      .order("release_date", { ascending: true, nullsFirst: false })
+      .order("title", { ascending: true });
+    if (error) throw error;
+    sb7AdminTitles = data || [];
+    renderAdminTitles();
+    if (loading) loading.hidden = true;
+    if (empty) empty.hidden = sb7AdminTitles.length !== 0;
+    setTitleCrudMessage(`${sb7AdminTitles.length} title${sb7AdminTitles.length === 1 ? "" : "s"} loaded.`, "success");
+  } catch (error) {
+    console.error("SB7 title load error:", error);
+    if (loading) { loading.hidden = false; loading.textContent = "Could not load titles: " + error.message; }
+    setTitleCrudMessage("Could not load titles: " + error.message, "error");
+  }
+}
+
+function renderAdminTitles() {
+  const list = document.getElementById("adminTitlesList");
+  const query = (document.getElementById("titleAdminSearch")?.value || "").trim().toLowerCase();
+  if (!list) return;
+  const rows = sb7AdminTitles.filter(row => {
+    if (!query) return true;
+    return [row.title,row.type,row.phase,row.status,row.importance].filter(Boolean).join(" ").toLowerCase().includes(query);
+  });
+  list.innerHTML = rows.map(row => {
+    const release = row.release_date || row.year || "Release date not set";
+    const tags = [row.type,row.phase,row.status,row.importance].filter(Boolean).join(" • ");
+    return `<article class="sb7-title-card ${row.active === false ? "sb7-title-hidden" : ""}">
+      <div><h4>${escapeHtml(row.title || "Untitled")}</h4>
+      <div class="sb7-title-meta">${escapeHtml(String(release))}${tags ? " • " + escapeHtml(tags) : ""}${row.doomsday_relevance ? " • ☄️ Doomsday" : ""}${row.active === false ? " • HIDDEN" : ""}</div></div>
+      <div class="sb7-title-actions">
+        <button class="quick" onclick="openTitleEditor('${row.id}')">✏️ Edit</button>
+        <button class="quick" onclick="toggleAdminTitleActive('${row.id}')">${row.active === false ? "👁️ Show" : "🙈 Hide"}</button>
+        <button class="quick sb7-admin-logout" onclick="deleteAdminTitle('${row.id}')">🗑️ Delete</button>
+      </div>
+    </article>`;
+  }).join("");
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>'"]/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[char]));
+}
+
+function openTitleEditor(id = "") {
+  if (!sb7IsAdmin) return openAdminLogin();
+  const form = document.getElementById("titleEditorForm");
+  if (!form) return;
+  form.reset();
+  document.getElementById("titleEditId").value = "";
+  document.getElementById("activeField").checked = true;
+  document.getElementById("titleEditorHeading").textContent = id ? "Edit Title" : "Add Title";
+  setTitleEditorMessage();
+  if (id) {
+    const row = sb7AdminTitles.find(item => item.id === id);
+    if (!row) return;
+    document.getElementById("titleEditId").value = row.id;
+    document.getElementById("titleField").value = row.title || "";
+    document.getElementById("typeField").value = row.type || "";
+    document.getElementById("releaseDateField").value = row.release_date || "";
+    document.getElementById("yearField").value = row.year ?? "";
+    document.getElementById("phaseField").value = row.phase || "";
+    document.getElementById("importanceField").value = row.importance || "";
+    document.getElementById("statusField").value = row.status || "upcoming";
+    document.getElementById("runtimeField").value = row.runtime ?? "";
+    document.getElementById("posterUrlField").value = row.poster_url || "";
+    document.getElementById("trailerUrlField").value = row.trailer_url || "";
+    document.getElementById("descriptionField").value = row.description || "";
+    document.getElementById("doomsdayField").checked = row.doomsday_relevance === true;
+    document.getElementById("activeField").checked = row.active !== false;
+  }
+  document.getElementById("titleEditorModal")?.classList.add("show");
+  setTimeout(() => document.getElementById("titleField")?.focus(), 80);
+}
+function closeTitleEditor() { document.getElementById("titleEditorModal")?.classList.remove("show"); }
+
+function titleFormPayload() {
+  const title = document.getElementById("titleField").value.trim();
+  if (!title) throw new Error("Title is required.");
+  const yearRaw = document.getElementById("yearField").value;
+  const runtimeRaw = document.getElementById("runtimeField").value;
+  return {
+    title, type: document.getElementById("typeField").value.trim() || null,
+    release_date: document.getElementById("releaseDateField").value || null,
+    year: yearRaw ? Number(yearRaw) : null, phase: document.getElementById("phaseField").value.trim() || null,
+    importance: document.getElementById("importanceField").value.trim() || null,
+    status: document.getElementById("statusField").value || "upcoming",
+    runtime: runtimeRaw ? Number(runtimeRaw) : null,
+    poster_url: document.getElementById("posterUrlField").value.trim() || null,
+    trailer_url: document.getElementById("trailerUrlField").value.trim() || null,
+    description: document.getElementById("descriptionField").value.trim() || null,
+    doomsday_relevance: document.getElementById("doomsdayField").checked,
+    active: document.getElementById("activeField").checked,
+    updated_at: new Date().toISOString()
+  };
+}
+
+async function saveAdminTitle(event) {
+  event.preventDefault();
+  if (!sb7IsAdmin || !sb7Supabase) return;
+  const button = document.getElementById("titleSaveButton");
+  try {
+    const payload = titleFormPayload();
+    button.disabled = true; button.textContent = "Saving…"; setTitleEditorMessage("Saving title…", "info");
+    const id = document.getElementById("titleEditId").value;
+    let result;
+    if (id) result = await sb7Supabase.from("titles").update(payload).eq("id", id).select().single();
+    else result = await sb7Supabase.from("titles").insert(payload).select().single();
+    if (result.error) throw result.error;
+    closeTitleEditor();
+    setTitleCrudMessage(id ? "Title updated successfully." : "Title added successfully.", "success");
+    await loadAdminTitles();
+    await loadAdminDashboardStats();
+  } catch (error) {
+    console.error("SB7 title save error:", error);
+    setTitleEditorMessage("Could not save title: " + error.message, "error");
+  } finally {
+    button.disabled = false; button.textContent = "Save Title";
+  }
+}
+
+async function toggleAdminTitleActive(id) {
+  if (!sb7IsAdmin || !sb7Supabase) return;
+  const row = sb7AdminTitles.find(item => item.id === id); if (!row) return;
+  try {
+    const { error } = await sb7Supabase.from("titles").update({ active: row.active === false, updated_at: new Date().toISOString() }).eq("id", id);
+    if (error) throw error;
+    setTitleCrudMessage(row.active === false ? "Title shown." : "Title hidden.", "success");
+    await loadAdminTitles(); await loadAdminDashboardStats();
+  } catch (error) { setTitleCrudMessage("Could not change title visibility: " + error.message, "error"); }
+}
+
+async function deleteAdminTitle(id) {
+  if (!sb7IsAdmin || !sb7Supabase) return;
+  const row = sb7AdminTitles.find(item => item.id === id); if (!row) return;
+  if (!confirm(`Delete “${row.title}”? This cannot be undone.`)) return;
+  try {
+    const { error } = await sb7Supabase.from("titles").delete().eq("id", id);
+    if (error) throw error;
+    setTitleCrudMessage("Title deleted successfully.", "success");
+    await loadAdminTitles(); await loadAdminDashboardStats();
+  } catch (error) { setTitleCrudMessage("Could not delete title: " + error.message, "error"); }
 }
 
 const items = [
@@ -1823,7 +2050,7 @@ function countdown(){
  document.getElementById("secs").textContent=Math.floor(d/1000)%60;
 }
 document.addEventListener("keydown",e=>{
-  if(e.key==="Escape"){closeModal();closeAdminLogin();closeAdminControlCenter();document.getElementById("mobileMenu")?.classList.remove("show");}
+  if(e.key==="Escape"){closeModal();closeAdminLogin();closeAdminControlCenter();closeTitleEditor();document.getElementById("mobileMenu")?.classList.remove("show");}
   if(e.key==="/" && document.activeElement.tagName!=="INPUT"){e.preventDefault();document.getElementById("search").focus();}
 });
 render();renderReadiness();renderAchievements();countdown();setInterval(countdown,1000);
