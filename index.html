@@ -718,6 +718,12 @@ try {
     error
   );
   }
+  console.log("SB7 Supabase status:", {
+      loaded: !!window.supabase,
+        ready: sb7SupabaseReady,
+          client: !!sb7Supabase
+          });
+
 const items = [
 /* Infinity Saga */
 {id:1,title:"Captain America: The First Avenger",year:2011,type:"Movie",phase:"Phase 1",universe:"Main MCU",importance:"Essential",mode:["mcu","complete","doomsday"],desc:"Steve Rogers, the Tesseract and the origins of a super-soldier legacy."},
