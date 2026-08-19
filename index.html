@@ -773,6 +773,9 @@ const SB7_SUPABASE_PUBLISHABLE_KEY = "sb_publishable__-DFc9_qqnt-IB92Lp36zg_83GF
 let sb7Supabase = null;
 let sb7SupabaseReady = false;
 
+let sb7CurrentUser = null;
+let sb7IsAdmin = false;
+
 try {
   if (
     window.supabase &&
