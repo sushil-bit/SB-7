@@ -2888,11 +2888,26 @@ document.addEventListener("keydown",e=>{
   if(e.key==="Escape"){closeModal();closeAdminLogin();closeAdminControlCenter();closeCharacterEditor();closeTitleEditor();document.getElementById("mobileMenu")?.classList.remove("show");}
   if(e.key==="/" && document.activeElement.tagName!=="INPUT"){e.preventDefault();document.getElementById("search").focus();}
 });
-render();renderReadiness();renderAchievements();countdown();setInterval(countdown,1000);
+// ============================================================
+// SB 7 — APPLICATION STARTUP
+// ============================================================
 
-// Supabase client is created before this point, so session restoration starts only
-// after the complete application script is loaded.
+// Render immediately using the existing local database.
+// This guarantees the website remains usable even if
+// Supabase is slow or unavailable.
+render();
+renderReadiness();
+renderAchievements();
+countdown();
+setInterval(countdown, 1000);
+
+// Restore Supabase authentication.
 initializeSB7Auth();
+
+// Load public titles from Supabase in the background.
+// Supabase becomes the preferred source where data exists.
+// Local hard-coded data remains the fallback.
+loadPublicTitlesFromSupabase();
 </script>
 <div class="toast" id="toast"></div>
 </body>
